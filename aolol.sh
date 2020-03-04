@@ -22,16 +22,18 @@ overlayFrames=(
 tmpbg='/tmp/screen.png'
 scrot "$tmpbg"
 
-convert "$tmpbg" -scale 5% -scale 2000% ${bgFrames[0]}
-convert "$tmpbg" -scale 10% -scale 1000% ${bgFrames[1]}
-convert "$tmpbg" -scale 20% -scale 500% ${bgFrames[2]}
-convert "$tmpbg" -scale 50% -scale 200% ${bgFrames[3]}
+convert "$tmpbg" -scale 5% -scale 2000% ${bgFrames[0]} &
+convert "$tmpbg" -scale 10% -scale 1000% ${bgFrames[1]} &
+convert "$tmpbg" -scale 20% -scale 500% ${bgFrames[2]} &
+convert "$tmpbg" -scale 50% -scale 200% ${bgFrames[3]} &
+wait
 
 rm "$tmpbg"
 
 for i in "${!bgFrames[@]}"; do
-  convert "${bgFrames[$i]}" "${fgFrames[$i]}" -gravity center -composite -matte "${overlayFrames[$i]}"
+  convert "${bgFrames[$i]}" "${fgFrames[$i]}" -gravity center -composite -matte "${overlayFrames[$i]}" &
 done
+wait
 
 for frame in "${overlayFrames[@]}"; do
   echo $frame

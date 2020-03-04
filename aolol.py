@@ -5,7 +5,7 @@ from os import remove
 from subprocess import run, PIPE
 from sys import exit
 from time import sleep
-
+from threading import Thread
 pygame.init()
 
 xrandr = run(['xrandr', '-q', '-d', ':0'], stdout=PIPE)
@@ -35,15 +35,36 @@ overlayFrames=[
   "/tmp/overlay-4.png",
 ]
 
-run(['convert', tmpbg, '-scale', '5%', '-scale', '2000%', bgFrames[0]])
-run(['convert', tmpbg, '-scale', '10%', '-scale', '1000%', bgFrames[1]])
-run(['convert', tmpbg, '-scale', '20%', '-scale', '500%', bgFrames[2]])
-run(['convert', tmpbg, '-scale', '50%', '-scale', '200%', bgFrames[3]])
+def convertBgFrame(scale1, scale2, filenameIndex):
+    run(['convert', tmpbg, '-scale', '5%', '-scale', '2000%', bgFrames[0]])
+
+convertThreads = []
+convertThreads.append(Thread(target=convertBgFrame, args=('5%', '2000%', 0)))
+convertThreads.append(Thread(target=convertBgFrame, args=('10%', '1000%', 1)))
+convertThreads.append(Thread(target=convertBgFrame, args=('20%', '500%', 2)))
+convertThreads.append(Thread(target=convertBgFrame, args=('50%', '200%', 3)))
+
+for thread in convertThreads:
+    thread.start()
+
+for thread in convertThreads:
+    thread.join()
 
 remove(tmpbg)
 
-for i in range(len(bgFrames)):
+def convertOverlayFrame(i):
     run(['convert', bgFrames[i], fgFrames[i], '-gravity', 'center', '-composite', '-matte', overlayFrames[i]])
+
+convertThreads = []
+
+for i in range(len(bgFrames)):
+    convertThreads.append(Thread(target=convertOverlayFrame, args=([i])))
+
+for thread in convertThreads:
+    thread.start()
+
+for thread in convertThreads:
+    thread.join()
 
 windowSurface = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
 
