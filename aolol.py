@@ -38,8 +38,24 @@ overlayFrames=[
 def convertBgFrame(scale1, scale2, filenameIndex):
     run(['convert', tmpbg, '-scale', scale1, '-scale', scale2, bgFrames[filenameIndex]])
 
+def convertOverlayFrame(i):
+    run(['convert', bgFrames[i], fgFrames[i], '-gravity', 'center', '-composite', '-matte', overlayFrames[i]])
+
+def showFrame(num):
+    img = pygame.image.load(overlayFrames[num])
+    windowSurface.blit(img, (0, 0))
+    pygame.display.flip()
+
+
+# prioritize first frame
+convertBgFrame('5%', '2000%', 0)
+convertOverlayFrame(0)
+
+windowSurface = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
+showFrame(0)
+
+# background the rest
 convertThreads = []
-convertThreads.append(Thread(target=convertBgFrame, args=('5%', '2000%', 0)))
 convertThreads.append(Thread(target=convertBgFrame, args=('10%', '1000%', 1)))
 convertThreads.append(Thread(target=convertBgFrame, args=('20%', '500%', 2)))
 convertThreads.append(Thread(target=convertBgFrame, args=('50%', '200%', 3)))
@@ -52,12 +68,8 @@ for thread in convertThreads:
 
 remove(tmpbg)
 
-def convertOverlayFrame(i):
-    run(['convert', bgFrames[i], fgFrames[i], '-gravity', 'center', '-composite', '-matte', overlayFrames[i]])
-
 convertThreads = []
-
-for i in range(len(bgFrames)):
+for i in range(1, len(bgFrames)):
     convertThreads.append(Thread(target=convertOverlayFrame, args=([i])))
 
 for thread in convertThreads:
@@ -66,12 +78,6 @@ for thread in convertThreads:
 for thread in convertThreads:
     thread.join()
 
-windowSurface = pygame.display.set_mode((WIDTH, HEIGHT), 0, 32)
-
-def showFrame(num):
-    img = pygame.image.load(overlayFrames[num])
-    windowSurface.blit(img, (0, 0))
-    pygame.display.flip()
 
 for frame in range(len(bgFrames)):
     events = pygame.event.get()
