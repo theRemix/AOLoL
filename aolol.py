@@ -36,7 +36,7 @@ overlayFrames=[
 ]
 
 def convertBgFrame(scale1, scale2, filenameIndex):
-    run(['convert', tmpbg, '-scale', '5%', '-scale', '2000%', bgFrames[0]])
+    run(['convert', tmpbg, '-scale', scale1, '-scale', scale2, bgFrames[filenameIndex]])
 
 convertThreads = []
 convertThreads.append(Thread(target=convertBgFrame, args=('5%', '2000%', 0)))
